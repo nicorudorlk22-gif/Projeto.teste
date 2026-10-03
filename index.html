@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#070b18">
+  <title>NEXUS AI — Workspace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --bg: #070b18;
+      --panel: #0b1224;
+      --panel-2: #0e1830;
+      --panel-3: #101e3b;
+      --line: rgba(92, 154, 255, .17);
+      --line-strong: rgba(69, 162, 255, .38);
+      --text: #eef4ff;
+      --muted: #8493b4;
+      --dim: #536384;
+      --blue: #259fff;
+      --cyan: #18d9f2;
+      --purple: #7952ff;
+      --green: #16d8a0;
+      --radius: 16px;
+      --sidebar: 250px;
+      font-family: "DM Sans", sans-serif;
+      color-scheme: dark;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(ellipse at 75% -18%, rgba(31, 80, 200, .19), transparent 37%),
+        radial-gradient(ellipse at 12% 100%, rgba(64, 20, 150, .11), transparent 34%),
+        var(--bg);
+      font-size: 14px;
+    }
+    button, input, textarea, select { font: inherit; }
+    button { color: inherit; }
+    .app { min-height: 100vh; }
+    .sidebar {
+      position: fixed; z-index: 20; inset: 0 auto 0 0; width: var(--sidebar);
+      display: flex; flex-direction: column; padding: 22px 14px 14px;
+      background: rgba(7, 12, 27, .94); border-right: 1px solid var(--line);
+      backdrop-filter: blur(20px);
+    }
+    .brand { display:flex; align-items:center; gap:11px; padding: 0 9px 23px; }
+    .brand-mark {
+      width: 35px; height: 35px; display:grid; place-items:center; border-radius: 11px;
+      color:#fff; font-family:"Space Grotesk"; font-weight:700; font-size:18px;
+      background: linear-gradient(135deg, #21d6ff, #5b48ff 55%, #be31ff);
+      box-shadow: 0 0 22px rgba(66, 99, 255, .42);
+      transform: skew(-5deg);
+    }
+    .brand-name { font:700 17px "Space Grotesk", sans-serif; letter-spacing:.035em; }
+    .brand-name span { color:#b246ff; }
+    .workspace-switch {
+      width:100%; display:flex; align-items:center; gap:10px; text-align:left;
+      padding:10px; margin-bottom:18px; border:1px solid var(--line); border-radius:12px;
+      background:rgba(15, 26, 51, .8); cursor:pointer; transition:.2s;
+    }
+    .workspace-switch:hover { border-color:var(--line-strong); background:var(--panel-2); }
+    .workspace-icon { display:grid; place-items:center; width:29px;height:29px;border-radius:9px;background:#20266a;color:#9d90ff; }
+    .workspace-copy { flex:1; min-width:0; }
+    .workspace-copy b { display:block;font-size:12px; }
+    .workspace-copy small { display:block;color:var(--muted);font-size:10px;margin-top:2px; }
+    .nav-label { color:#607092; font:500 10px "DM Mono",monospace; text-transform:uppercase; letter-spacing:.12em; padding:8px 11px; }
+    .nav-list { display:grid; gap:3px; }
+    .nav-item {
+      border:0; background:transparent; width:100%; min-height:39px; display:flex; align-items:center; gap:11px;
+      padding:0 11px; color:#9aa9c7; border-radius:10px; cursor:pointer; text-align:left; transition:.18s;
+    }
+    .nav-item .icon { width:17px; height:17px; display:grid; place-items:center; }
+    .nav-item svg { width:16px;height:16px; stroke-width:1.8; }
+    .nav-item:hover { color:#eef4ff; background:rgba(33, 69, 130, .24); }
+    .nav-item.active { color:white; background:linear-gradient(90deg,rgba(34, 123, 255, .2),rgba(113, 70, 255, .13)); box-shadow:inset 2px 0 #36aaff; }
+    .nav-item.active svg { color:#55bcff; }
+    .nav-badge { margin-left:auto; font:10px "DM Mono"; color:#94a6c7; }
+    .sidebar-spacer { flex:1; }
+    .upgrade-card {
+      padding:13px; border:1px solid rgba(117, 75, 255, .25); border-radius:13px;
+      background:linear-gradient(140deg,rgba(55, 39, 125, .28),rgba(12, 23, 46, .85)); margin-bottom:12px;
+    }
+    .upgrade-card .spark { color:#ae8aff; display:flex; align-items:center; gap:7px; font-size:12px;font-weight:600; }
+    .upgrade-card p { color:#8e9cba;font-size:11px;line-height:1.5;margin:8px 0 11px; }
+    .upgrade-card button { width:100%; padding:8px;border:0;border-radius:8px;background:linear-gradient(100deg,#6357ff,#a53af4);font-size:11px;font-weight:600;cursor:pointer; }
+    .user-profile { display:flex;align-items:center;gap:10px;padding:11px 8px 3px;border-top:1px solid var(--line); }
+    .avatar { width:31px;height:31px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#f0a16b,#8d48ff);font-size:12px;font-weight:700;color:white; }
+    .user-meta { flex:1; }.user-meta b { display:block;font-size:12px; }.user-meta small { color:var(--muted);font-size:10px; }
+    .main { margin-left:var(--sidebar); min-height:100vh; }
+    .topbar {
+      height:68px; display:flex;align-items:center;gap:16px;padding:0 34px;
+      border-bottom:1px solid rgba(83, 132, 216, .12); background:rgba(7, 11, 24, .52);
+      position:sticky;top:0;z-index:10;backdrop-filter:blur(18px);
+    }
+    .mobile-menu { display:none; border:0;background:none;color:var(--text);padding:5px;cursor:pointer; }
+    .crumb { color:var(--muted);font-size:12px;display:flex;align-items:center;gap:9px; }
+    .crumb strong { color:#e4ecff;font-weight:500; }
+    .top-search { margin-left:auto; width:min(270px,29vw);position:relative; }
+    .top-search input {
+      width:100%;height:35px;border-radius:9px;border:1px solid var(--line);background:rgba(13, 23, 44, .8);
+      padding:0 32px 0 34px;color:var(--text);outline:none;font-size:12px;
+    }
+    .top-search input:focus { border-color:#358fe6;box-shadow:0 0 0 3px rgba(30, 133, 255,.1); }
+    .top-search svg { position:absolute;left:11px;top:10px;width:15px;height:15px;color:#8191b2; }
+    .search-shortcut { position:absolute;right:9px;top:9px;font:10px "DM Mono";color:#5f7093; }
+    .top-icon { width:34px;height:34px;display:grid;place-items:center;border:1px solid var(--line);border-radius:9px;background:rgba(13,23,44,.75);color:#9baaca;cursor:pointer;position:relative; }
+    .top-icon:hover { color:white;border-color:var(--line-strong); }
+    .notify-dot { width:6px;height:6px;background:#a450ff;border-radius:50%;position:absolute;right:7px;top:6px; }
+    .content { max-width:1450px;margin:0 auto;padding:30px 34px 50px; }
+    .page-heading { display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:22px; }
+    .eyebrow { display:flex;align-items:center;gap:7px;color:#68bdff;font:10px "DM Mono";text-transform:uppercase;letter-spacing:.13em;margin-bottom:8px; }
+    .eyebrow .pulse { width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 9px var(--green); }
+    h1,h2,h3,p { margin-top:0; }
+    h1 { font:600 clamp(23px,2.2vw,31px) "Space Grotesk",sans-serif;letter-spacing:-.04em;margin-bottom:6px; }
+    .subheading { color:var(--muted);margin:0;font-size:13px; }
+    .heading-actions { display:flex;gap:9px;align-items:center; }
+    .btn {
+      border:1px solid var(--line-strong);border-radius:9px;background:rgba(14,28,54,.8);color:#dce9ff;
+      height:36px;padding:0 13px;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      font-size:11px;font-weight:600;cursor:pointer;transition:.2s;white-space:nowrap;
+    }
+    .btn:hover { border-color:#43b3ff;transform:translateY(-1px);background:#12294d; }
+    .btn svg { width:15px;height:15px; }
+    .btn-primary { border-color:transparent;background:linear-gradient(105deg,#2567ff,#853cff);box-shadow:0 4px 20px rgba(89,63,255,.22);color:white; }
+    .btn-primary:hover { background:linear-gradient(105deg,#3883ff,#9b50ff); }
+    .btn-quiet { background:transparent;border-color:var(--line);color:#a7b6d3; }
+    .grid { display:grid;gap:15px; }
+    .stats-grid { grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:16px; }
+    .card {
+      border:1px solid var(--line);border-radius:var(--radius);background:linear-gradient(145deg,rgba(14,25,48,.94),rgba(9,16,32,.97));
+      box-shadow:0 10px 35px rgba(0,0,0,.08);
+    }
+    .stat-card { padding:16px 17px;min-height:105px;position:relative;overflow:hidden; }
+    .stat-card:after { content:"";position:absolute;right:-25px;top:-38px;width:100px;height:100px;border-radius:50%;background:rgba(44,130,255,.08);filter:blur(16px); }
+    .stat-label { color:var(--muted);font-size:11px;display:flex;align-items:center;gap:7px; }
+    .stat-label svg { width:14px;height:14px;color:#60b8ff; }
+    .stat-value { font:600 23px "Space Grotesk";margin-top:11px;letter-spacing:-.04em; }
+    .stat-change { color:#58d9b2;font-size:10px;margin-left:7px;font-family:"DM Sans";letter-spacing:0; }
+    .stat-foot { color:#687a9c;font-size:10px;margin-top:4px; }
+    .overview-grid { display:grid;grid-template-columns:minmax(0,1.7fr) minmax(280px,.92fr);gap:15px;align-items:start; }
+    .chat-card { overflow:hidden; }
+    .card-head { padding:16px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(89,139,219,.12); }
+    .card-title { display:flex;align-items:center;gap:10px; }
+    .card-title h2 { font:600 14px "Space Grotesk";margin:0; }
+    .card-title p { color:var(--muted);font-size:10px;margin:4px 0 0; }
+    .model-pill { display:flex;align-items:center;gap:7px;padding:6px 9px;border-radius:8px;border:1px solid var(--line);color:#c2d0ec;background:#0b1830;font-size:10px;cursor:pointer; }
+    .model-pill .gem { width:16px;height:16px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#12cfff,#6b52ff);color:white;font-size:10px; }
+    .chat-intro { min-height:216px;padding:22px 20px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center; }
+    .orb {
+      width:54px;height:54px;border-radius:18px;display:grid;place-items:center;margin:1px auto 13px;
+      color:#a5efff;background:radial-gradient(circle at 35% 25%,#379eff,#4930ba 60%,#211259);
+      box-shadow:0 0 28px rgba(46,120,255,.4),inset 0 0 15px rgba(53,226,255,.25);transform:rotate(-9deg);
+    }
+    .orb svg { width:26px;height:26px; }
+    .chat-intro h3 { font:500 17px "Space Grotesk";margin:0 0 6px; }
+    .chat-intro p { max-width:410px;color:var(--muted);font-size:11px;line-height:1.6;margin:0; }
+    .suggestions { display:flex;flex-wrap:wrap;justify-content:center;gap:7px;margin-top:15px; }
+    .suggestion { border:1px solid var(--line);border-radius:20px;background:rgba(19,33,65,.67);padding:7px 10px;color:#aebcda;font-size:10px;cursor:pointer; }
+    .suggestion:hover { border-color:#488bff;color:white; }
+    .conversation { max-height:250px;overflow-y:auto;padding:0 18px; }
+    .message { max-width:84%;padding:10px 12px;margin:10px 0;border-radius:12px;font-size:11px;line-height:1.55; }
+    .message.user { margin-left:auto;background:linear-gradient(115deg,#174da9,#4d3bad);border:1px solid rgba(112,144,255,.3); }
+    .message.ai { background:#101d38;border:1px solid var(--line);color:#d5e1fa; }
+    .message-meta { display:flex;gap:6px;align-items:center;color:#8b9abb;font-size:9px;margin-bottom:5px; }
+    .composer-wrap { padding:12px 15px 15px; }
+    .composer {
+      border:1px solid rgba(81,150,255,.31);border-radius:12px;background:#091329;padding:9px 10px 8px;
+      transition:.2s;
+    }
+    .composer:focus-within { border-color:#388fea;box-shadow:0 0 0 3px rgba(49,135,255,.08); }
+    .composer textarea { display:block;width:100%;min-height:35px;max-height:110px;resize:vertical;border:0;outline:0;background:transparent;color:#e9f1ff;font-size:11px;padding:4px; }
+    .composer textarea::placeholder { color:#66799e; }
+    .composer-tools { display:flex;align-items:center;gap:6px; }
+    .tool-button { display:grid;place-items:center;width:28px;height:28px;border:0;border-radius:7px;background:transparent;color:#8797b7;cursor:pointer; }
+    .tool-button:hover { background:#15264a;color:white; }
+    .tool-button svg { width:15px;height:15px; }
+    .composer-hint { color:#657596;font-size:9px;margin-left:4px; }
+    .send-button { margin-left:auto;width:31px;height:31px;border:0;border-radius:9px;background:linear-gradient(135deg,#286eff,#9039f5);display:grid;place-items:center;cursor:pointer;color:white; }
+    .send-button:hover { filter:brightness(1.2); }
+    .send-button svg { width:16px;height:16px; }
+    .right-stack { display:grid;gap:15px; }
+    .model-summary { padding:16px; }
+    .summary-title { display:flex;align-items:center;justify-content:space-between;margin-bottom:15px; }
+    .summary-title h2 { font:600 13px "Space Grotesk";margin:0; }
+    .text-link { color:#68baff;background:none;border:0;font-size:10px;cursor:pointer;padding:3px; }
+    .text-link:hover { color:white; }
+    .active-model { display:flex;align-items:center;gap:11px;padding:12px;border-radius:11px;border:1px solid rgba(48,158,255,.27);background:linear-gradient(110deg,rgba(20,69,131,.26),rgba(34,28,96,.21)); }
+    .model-icon { width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#38c7ff,#5738fc);font-size:20px;box-shadow:0 0 15px rgba(37,134,255,.19); }
+    .active-model-info { flex:1; }
+    .active-model-info b { display:block;font-size:11px; }
+    .active-model-info small { color:var(--muted);font-size:10px; }
+    .status { display:inline-flex;align-items:center;gap:5px;padding:4px 7px;border-radius:20px;color:#49e4b4;background:rgba(8,158,112,.15);font-size:9px; }
+    .status:before { content:"";width:5px;height:5px;background:#28dfa8;border-radius:50%; }
+    .usage-row { margin-top:15px;display:flex;justify-content:space-between;color:#99a9c7;font-size:10px; }
+    .progress { height:5px;border-radius:8px;background:#162440;margin-top:8px;overflow:hidden; }
+    .progress span { display:block;height:100%;width:38%;border-radius:8px;background:linear-gradient(90deg,#18d8f0,#7351ff); }
+    .agent-card { padding:15px; }
+    .agent-list { display:grid;gap:8px; }
+    .agent-row { display:flex;align-items:center;gap:9px;padding:8px;border:1px solid rgba(81,131,205,.14);border-radius:10px;background:rgba(12,25,49,.6); }
+    .agent-icon { width:31px;height:31px;border-radius:9px;display:grid;place-items:center;font-size:14px;background:rgba(32,127,242,.18);color:#68c8ff; }
+    .agent-row:nth-child(2) .agent-icon { color:#b89bff;background:rgba(111,65,230,.2); }
+    .agent-row:nth-child(3) .agent-icon { color:#4de0cc;background:rgba(19,173,163,.16); }
+    .agent-info { flex:1;min-width:0; }
+    .agent-info b { display:block;font-size:10px; }
+    .agent-info small { color:var(--muted);font-size:9px; }
+    .agent-count { font:10px "DM Mono";color:#8a9bbb; }
+    .lower-grid { display:grid;grid-template-columns:1.1fr 1fr .88fr;gap:15px;margin-top:15px; }
+    .compact-card { padding:16px;min-height:166px; }
+    .project-list { display:grid;gap:8px;margin-top:13px; }
+    .project-row { display:flex;align-items:center;gap:10px; }
+    .project-thumb { width:32px;height:32px;border-radius:9px;display:grid;place-items:center;background:linear-gradient(135deg,#145b94,#4c42bd);font-size:14px; }
+    .project-row:nth-child(2) .project-thumb { background:linear-gradient(135deg,#ae4d29,#662b84); }
+    .project-row:nth-child(3) .project-thumb { background:linear-gradient(135deg,#157b78,#2355bc); }
+    .project-meta { flex:1; }
+    .project-meta b { font-size:10px;display:block; }
+    .project-meta small { color:var(--muted);font-size:9px; }
+    .project-time { color:#68799b;font-size:9px; }
+    .activity-list { margin-top:15px;display:grid;gap:12px; }
+    .activity-item { display:flex;gap:9px;align-items:flex-start;color:#a8b5d0;font-size:10px;line-height:1.4; }
+    .activity-dot { margin-top:4px;width:7px;height:7px;border-radius:50%;background:#2ad6b0;box-shadow:0 0 8px rgba(42,214,176,.5);flex:0 0 auto; }
+    .activity-item:nth-child(2) .activity-dot { background:#9c62ff;box-shadow:0 0 8px #864cff; }
+    .activity-item:nth-child(3) .activity-dot { background:#36a9ff; }
+    .activity-item small { display:block;color:#68799c;font-size:9px;margin-top:3px; }
+    .quick-actions { display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:13px; }
+    .quick-action { display:flex;align-items:center;gap:8px;padding:10px;border:1px solid var(--line);border-radius:9px;background:rgba(12,25,49,.7);color:#b6c5e1;font-size:10px;cursor:pointer; }
+    .quick-action:hover { border-color:var(--line-strong);color:white;background:#102246; }
+    .quick-action svg { width:15px;height:15px;color:#64c4ff; }
+    /* Dynamic page components */
+    .toolbar { display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:18px 0; }
+    .filter-chip { border:1px solid var(--line);border-radius:20px;background:#0b162e;color:#9baaca;padding:7px 12px;font-size:10px;cursor:pointer; }
+    .filter-chip.active,.filter-chip:hover { color:white;border-color:#655aff;background:rgba(101,80,255,.23); }
+    .inline-search { position:relative;flex:1;min-width:180px;max-width:330px; }
+    .inline-search svg { width:15px;position:absolute;left:11px;top:10px;color:#8092b5; }
+    .inline-search input { width:100%;height:36px;padding:0 10px 0 33px;background:#0b162e;border:1px solid var(--line);border-radius:9px;color:var(--text);outline:0;font-size:11px; }
+    .inline-search input:focus { border-color:#388fea; }
+    .data-grid { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px; }
+    .data-card { padding:15px;transition:.2s; }
+    .data-card:hover { border-color:rgba(75,159,255,.38);transform:translateY(-2px); }
+    .data-card-top { display:flex;align-items:center;gap:10px; }
+    .data-card h3 { font:600 13px "Space Grotesk";margin:0 0 4px; }
+    .data-card p { color:var(--muted);font-size:10px;line-height:1.5;margin:12px 0; }
+    .data-card .mini-meta { color:#7183a5;font-size:9px; }
+    .data-card-actions { display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:11px;border-top:1px solid rgba(89,139,219,.12); }
+    .tag { font-size:9px;color:#79caff;background:rgba(33,131,222,.13);border:1px solid rgba(53,161,255,.17);padding:4px 7px;border-radius:20px; }
+    .terminal-window { border:1px solid rgba(64,147,255,.25);border-radius:13px;background:#050a16;overflow:hidden; }
+    .terminal-bar { height:38px;display:flex;align-items:center;gap:6px;padding:0 13px;background:#0d1830;border-bottom:1px solid var(--line); }
+    .term-dot { width:7px;height:7px;border-radius:50%;background:#ff667b; }.term-dot:nth-child(2){background:#f4bd55}.term-dot:nth-child(3){background:#35d6a2}
+    .terminal-title { color:#8b9bb9;font:10px "DM Mono";margin-left:6px; }
+    .terminal-output { min-height:280px;padding:17px;color:#a9c6df;font:11px/1.9 "DM Mono"; }
+    .terminal-output .green { color:#27d6a2; }.terminal-output .cyan { color:#43caff; }.terminal-output .purple { color:#ad80ff; }
+    .terminal-input-wrap { display:flex;gap:9px;border-top:1px solid var(--line);padding:11px; }
+    .terminal-input-wrap input { flex:1;background:transparent;border:0;outline:0;color:#c8f5e5;font:11px "DM Mono"; }
+    .setting-row { display:flex;align-items:center;justify-content:space-between;gap:20px;padding:15px 0;border-bottom:1px solid rgba(89,139,219,.12); }
+    .setting-row:last-child { border-bottom:0; }
+    .setting-row b { display:block;font-size:12px; }.setting-row small { color:var(--muted);font-size:10px;display:block;margin-top:4px; }
+    .toggle { width:37px;height:21px;border-radius:20px;background:#253451;border:0;padding:3px;cursor:pointer;transition:.2s;flex:0 0 auto; }
+    .toggle:after { content:"";display:block;width:15px;height:15px;border-radius:50%;background:#8b9ab7;transition:.2s; }
+    .toggle.on { background:#3a47b9; }.toggle.on:after { transform:translateX(16px);background:white; }
+    .empty-state { grid-column:1/-1;padding:45px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:14px; }
+    .empty-state svg { color:#6487c4;margin-bottom:8px; }
+    .split-layout { display:grid;grid-template-columns:minmax(0,1.5fr) minmax(250px,.7fr);gap:15px; }
+    .voice-panel { text-align:center;padding:40px 20px; }
+    .voice-orb { width:155px;height:155px;border-radius:50%;margin:5px auto 24px;display:grid;place-items:center;border:1px solid rgba(37,183,255,.65);background:radial-gradient(circle,#213e9b 0%,#151357 48%,#09142d 70%);box-shadow:0 0 0 10px rgba(29,107,237,.08),0 0 44px rgba(43,93,255,.4);color:#b783ff; }
+    .voice-orb svg { width:48px;height:48px; }.voice-orb.listening { animation:pulse 1.2s infinite; }
+    @keyframes pulse { 50% { box-shadow:0 0 0 18px rgba(29,107,237,.08),0 0 66px rgba(150,61,255,.75); } }
+    .browser-bar { display:flex;gap:8px;padding:10px;border:1px solid var(--line);border-radius:11px;background:#0a1428; }
+    .browser-bar input { flex:1;background:transparent;border:0;outline:0;color:var(--text);font-size:11px; }
+    .browser-preview { min-height:300px;margin-top:12px;border:1px solid var(--line);border-radius:13px;background:radial-gradient(circle at 50% 32%,rgba(64,73,206,.25),transparent 38%),#080e1e;display:grid;place-items:center;text-align:center;padding:25px; }
+    .browser-preview h3 { font:600 22px "Space Grotesk";margin:10px 0 6px; }.browser-preview p { color:var(--muted);font-size:11px; }
+    .modal-backdrop { position:fixed;z-index:50;inset:0;display:grid;place-items:center;padding:20px;background:rgba(2,5,14,.76);backdrop-filter:blur(8px); }
+    .modal { width:min(480px,100%);border:1px solid rgba(86,151,255,.32);border-radius:16px;background:#0c162c;box-shadow:0 25px 80px rgba(0,0,0,.55);overflow:hidden; }
+    .modal-head { display:flex;align-items:center;justify-content:space-between;padding:17px 19px;border-bottom:1px solid var(--line); }
+    .modal-head h2 { font:600 15px "Space Grotesk";margin:0; }
+    .modal-body { padding:18px; }.field { display:grid;gap:7px;margin-bottom:14px; }.field label { color:#aebbd3;font-size:11px; }
+    .field input,.field textarea,.field select { width:100%;border:1px solid var(--line);border-radius:9px;background:#081226;color:var(--text);padding:10px;outline:0;font-size:11px; }
+    .field textarea { min-height:75px;resize:vertical; }.field input:focus,.field textarea:focus,.field select:focus { border-color:#388fea; }
+    .modal-foot { display:flex;justify-content:flex-end;gap:8px;padding:13px 18px;border-top:1px solid var(--line); }
+    .toast-wrap { position:fixed;z-index:80;right:22px;bottom:22px;display:grid;gap:8px; }
+    .toast { min-width:230px;padding:12px 15px;border:1px solid rgba(51,206,164,.3);border-radius:10px;background:#0b1e2b;color:#d8fff2;box-shadow:0 10px 30px #0008;font-size:11px;animation:toastIn .25s ease; }
+    @keyframes toastIn { from { opacity:0;transform:translateY(8px); } to { opacity:1;transform:none; } }
+    .overlay { display:none; }
+    @media (max-width:1100px) {
+      :root { --sidebar:220px; }
+      .content { padding:25px 22px 40px; }.topbar { padding:0 22px; }
+      .lower-grid { grid-template-columns:1fr 1fr; }.lower-grid .compact-card:last-child { grid-column:1/-1; }
+      .data-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    }
+    @media (max-width:780px) {
+      :root { --sidebar:260px; }
+      .sidebar { transform:translateX(-100%);transition:transform .25s ease;box-shadow:20px 0 50px #0008; }
+      body.nav-open .sidebar { transform:translateX(0); }
+      .overlay { display:none;position:fixed;z-index:19;inset:0;background:rgba(0,0,0,.55); }
+      body.nav-open .overlay { display:block; }
+      .main { margin-left:0; }.mobile-menu { display:block; }
+      .topbar { height:60px;padding:0 16px;gap:11px; }.top-search { width:min(220px,38vw); }
+      .content { padding:22px 16px 36px; }
+      .overview-grid { grid-template-columns:1fr; }.right-stack { grid-template-columns:1fr 1fr; }
+      .stats-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .page-heading { align-items:center; }.data-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    }
+    @media (max-width:540px) {
+      .top-search { width:36px; }.top-search input { padding:0;width:36px;color:transparent;cursor:pointer; }
+      .top-search input:focus { position:absolute;right:0;width:min(270px,75vw);padding:0 32px 0 34px;color:var(--text); }
+      .top-search .search-shortcut { display:none; }
+      .top-icon:nth-of-type(3) { display:none; }
+      .content { padding:20px 13px 30px; }
+      .page-heading { align-items:flex-start; }.heading-actions .btn:not(.btn-primary) { display:none; }
+      .stats-grid { gap:9px; }.stat-card { padding:13px;min-height:95px; }.stat-value { font-size:20px; }
+      .right-stack { grid-template-columns:1fr; }.lower-grid { grid-template-columns:1fr; }.lower-grid .compact-card:last-child { grid-column:auto; }
+      .data-grid { grid-template-columns:1fr; }.split-layout { grid-template-columns:1fr; }
+      .crumb { display:none; }.topbar { gap:9px; }.page-heading h1 { font-size:24px; }
+      .model-pill { font-size:0;gap:4px; }.model-pill .gem { font-size:10px; }.chat-intro { min-height:200px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay" id="overlay"></div>
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark">N</div>
+        <div class="brand-name">NEXUS <span>AI</span></div>
+      </div>
+      <button class="workspace-switch" data-action="workspace">
+        <span class="workspace-icon"><i data-lucide="layers"></i></span>
+        <span class="workspace-copy"><b>Workspace pessoal</b><small>Plano gratuito</small></span>
+        <i data-lucide="chevrons-up-down" style="width:14px;color:#7384a5"></i>
+      </button>
+      <div class="nav-label">Workspace</div>
+      <nav class="nav-list" id="main-nav">
+        <button class="nav-item active" data-page="Inicio"><span class="icon"><i data-lucide="layout-dashboard"></i></span>Início</button>
+        <button class="nav-item" data-page="Chat"><span class="icon"><i data-lucide="messages-square"></i></span>Super Chat</button>
+        <button class="nav-item" data-page="Agentes"><span class="icon"><i data-lucide="bot"></i></span>Agentes <span class="nav-badge">15</span></button>
+        <button class="nav-item" data-page="Modelos de IA"><span class="icon"><i data-lucide="sparkles"></i></span>Modelos de IA</button>
+        <button class="nav-item" data-page="Projetos"><span class="icon"><i data-lucide="folder-kanban"></i></span>Projetos</button>
+        <button class="nav-item" data-page="Terminal"><span class="icon"><i data-lucide="square-terminal"></i></span>Terminal</button>
+        <button class="nav-item" data-page="Navegador"><span class="icon"><i data-lucide="globe-2"></i></span>Navegador</button>
+        <div class="nav-label" style="padding-top:17px">Ecossistema</div>
+        <button class="nav-item" data-page="Marketplace"><span class="icon"><i data-lucide="blocks"></i></span>Marketplace</button>
+        <button class="nav-item" data-page="Integrações"><span class="icon"><i data-lucide="plug-zap"></i></span>Integrações</button>
+        <button class="nav-item" data-page="Voz & Áudio"><span class="icon"><i data-lucide="audio-lines"></i></span>Voz & Áudio</button>
+        <button class="nav-item" data-page="Configurações"><span class="icon"><i data-lucide="settings-2"></i></span>Configurações</button>
+      </nav>
+      <div class="sidebar-spacer"></div>
+      <div class="upgrade-card">
+        <div class="spark"><i data-lucide="sparkles" style="width:14px;height:14px"></i> NEXUS PRO</div>
+        <p>Mais modelos, agentes e recursos para tirar seus projetos do papel.</p>
+        <button data-action="upgrade">Conhecer planos <i data-lucide="arrow-up-right" style="width:12px;vertical-align:middle"></i></button>
+      </div>
+      <div class="user-profile">
+        <div class="avatar">BL</div>
+        <div class="user-meta"><b>Beli</b><small>beli@nexus.ai</small></div>
+        <button class="tool-button" aria-label="Opções da conta" data-action="profile"><i data-lucide="ellipsis"></i></button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button class="mobile-menu" id="menuToggle" aria-label="Abrir menu"><i data-lucide="menu"></i></button>
+        <div class="crumb"><span>Workspace</span><i data-lucide="chevron-right" style="width:13px;height:13px"></i><strong id="crumb-current">Início</strong></div>
+        <div class="top-search"><i data-lucide="search"></i><input id="global-search" type="search" placeholder="Buscar em tudo..."><span class="search-shortcut">⌘ K</span></div>
+        <button class="top-icon" aria-label="Ajuda" data-action="help"><i data-lucide="circle-help"></i></button>
+        <button class="top-icon" aria-label="Notificações" data-action="notifications"><i data-lucide="bell"></i><span class="notify-dot"></span></button>
+        <button class="top-icon" aria-label="Perfil" data-action="profile"><i data-lucide="user-round"></i></button>
+      </header>
+      <div class="content" id="view"></div>
+    </main>
+  </div>
+  <div id="modal-root"></div>
+  <div class="toast-wrap" id="toasts"></div>
+
+  <script>
+    const icon = (name, size=16) => `<i data-lucide="${name}" style="width:${size}px;height:${size}px"></i>`;
+    const models = [
+      {name:"Gemini 2.5 Pro",provider:"Google",type:"Nuvem",price:"Grátis",icon:"✦",desc:"Multimodal · Raciocínio · Código",ctx:"1M tokens",color:"gemini"},
+      {name:"DeepSeek R1",provider:"DeepSeek",type:"Nuvem",price:"Grátis",icon:"◉",desc:"Raciocínio · Pesquisa · Código",ctx:"128K tokens",color:"deep"},
+      {name:"Llama 3.1 70B",provider:"Meta",type:"Open source",price:"Grátis",icon:"∞",desc:"Código · Chat · Local",ctx:"128K tokens",color:"meta"},
+      {name:"Claude 3.7 Sonnet",provider:"Anthropic",type:"Nuvem",price:"Pago",icon:"✳",desc:"Análise · Escrita · Código",ctx:"200K tokens",color:"claude"},
+      {name:"Qwen 2.5 Coder",provider:"Alibaba",type:"Local",price:"Grátis",icon:"⌘",desc:"Programação · Open source",ctx:"128K tokens",color:"qwen"},
+      {name:"Mistral Large",provider:"Mistral AI",type:"Nuvem",price:"Pago",icon:"M",desc:"Texto · Código · Multilíngue",ctx:"128K tokens",color:"mistral"},
+      {name:"NVIDIA Nemotron",provider:"NVIDIA",type:"Nuvem",price:"Grátis",icon:"◈",desc:"Agentes · Raciocínio · Código",ctx:"128K tokens",color:"nvidia"},
+      {name:"GPT-4.1",provider:"OpenAI",type:"Nuvem",price:"Pago",icon:"✿",desc:"Multimodal · Ferramentas · Código",ctx:"1M tokens",color:"openai"},
+      {name:"MiniMax M2",provider:"MiniMax",type:"Nuvem",price:"Grátis",icon:"✧",desc:"Agentes · Código · Raciocínio",ctx:"200K tokens",color:"minimax"}
+    ];
+    const agents = [
+      ["Main Agent","Orquestração inteligente","🧭","Coordena tarefas, escolhe modelos e delega trabalho."],
+      ["Coding Agent","Desenvolvimento de código","⌘","Cria, refatora e explica código em várias linguagens."],
+      ["Research Agent","Pesquisa e análise","⌕","Investiga fontes e sintetiza informações com contexto."],
+      ["Browser Agent","Navegação web","◎","Explora páginas, preenche fluxos e encontra informações."],
+      ["Terminal Agent","Comandos e scripts","▣","Executa operações no sandbox Linux do projeto."],
+      ["Python Agent","Execução Python","⌁","Analisa dados e executa código Python isolado."],
+      ["Debug Agent","Correção de erros","⌘","Identifica falhas, sugere correções e valida resultados."],
+      ["GitHub Agent","Repositórios e versionamento","◉","Trabalha com branches, issues, commits e pull requests."],
+      ["Automation Agent","Automação de processos","⟳","Conecta ferramentas e automatiza tarefas repetitivas."],
+      ["Database Agent","Dados e consultas","▤","Cria consultas e ajuda a modelar seu banco de dados."],
+      ["UI Agent","Interfaces e design","▧","Transforma ideias em interfaces acessíveis e responsivas."],
+      ["Security Agent","Segurança de aplicações","⛨","Revisa dependências, código e configurações de segurança."],
+      ["Documentation Agent","Documentação técnica","▤","Gera documentação clara para times e projetos."],
+      ["Testing Agent","Testes e qualidade","✓","Cria e executa testes para garantir qualidade."],
+      ["Deployment Agent","Publicação e infraestrutura","↗","Prepara builds, pipelines e publicação de aplicações."]
+    ];
+    const plugins = [
+      ["GitHub Integration","Integração completa com repositórios","◉","Produtividade","v1.2.0"],
+      ["WhatsApp Connector","Conecte com a API do WhatsApp","◉","Comunicação","v2.0.1"],
+      ["Docker Manager","Gerenciamento de containers","▣","Desenvolvimento","v1.0.5"],
+      ["n8n Automation","Automação de fluxos","⌘","Produtividade","v1.3.0"],
+      ["Supabase Tools","Banco de dados e autenticação","✦","Desenvolvimento","v1.2.1"],
+      ["Figma Bridge","Envie designs direto para seu agente","◈","Design","v1.0.3"],
+      ["Playwright Toolkit","Automação e testes de navegador","◎","Desenvolvimento","v1.1.0"],
+      ["MCP Server Kit","Conecte ferramentas com MCP","⬡","IA","v1.0.0"]
+    ];
+    const integrations = [
+      ["GitHub","Repositórios e versionamento","◉","Conectado"],
+      ["Supabase","Banco de dados e autenticação","✦","Conectado"],
+      ["Firebase","Backend e hospedagem","🔥","Conectar"],
+      ["n8n","Automação de fluxos","⌘","Conectar"],
+      ["WhatsApp","Mensagens e automações","◉","Conectar"],
+      ["Discord","Comunicação em equipe","◈","Conectar"],
+      ["OpenRouter","Acesso a modelos de IA","◇","Conectar"],
+      ["Hugging Face","Modelos e datasets","🤗","Conectar"]
+    ];
+    let currentPage = "Início", currentFilter = "Todos", chatCount = 0, terminalHistory = [];
+    const view = document.getElementById("view");
+
+    function heading(title, subtitle, action="") {
+      return `<div class="page-heading"><div><div class="eyebrow"><span class="pulse"></span> NEXUS AI · WORKSPACE</div><h1>${title}</h1><p class="subheading">${subtitle}</p></div><div class="heading-actions">${action}</div></div>`;
+    }
+    function cardTitle(title, subtitle="", action="") {
+      return `<div class="card-head"><div class="card-title"><div><h2>${title}</h2>${subtitle?`<p>${subtitle}</p>`:""}</div></div>${action}</div>`;
+    }
+    function homePage() {
+      return `${heading("Olá, Beli <span style='color:#ffc15c'>✦</span>","O que vamos criar hoje? Seu ecossistema de IA está pronto para você.",`<button class="btn btn-quiet" data-action="activity">${icon("history")} Histórico</button><button class="btn btn-primary" data-action="new-project">${icon("plus")} Novo projeto</button>`)}
+      <section class="grid stats-grid">
+        <div class="card stat-card"><div class="stat-label">${icon("bot")} Agentes ativos</div><div class="stat-value">15 <span class="stat-change">+2 hoje</span></div><div class="stat-foot">Todos os agentes operacionais</div></div>
+        <div class="card stat-card"><div class="stat-label">${icon("sparkles")} Modelos disponíveis</div><div class="stat-value">24 <span class="stat-change">↑ 4 novos</span></div><div class="stat-foot">De 12 provedores diferentes</div></div>
+        <div class="card stat-card"><div class="stat-label">${icon("folder-kanban")} Projetos</div><div class="stat-value">08 <span class="stat-change">+1 esta semana</span></div><div class="stat-foot">3 projetos em andamento</div></div>
+        <div class="card stat-card"><div class="stat-label">${icon("zap")} Uso neste mês</div><div class="stat-value">68% <span class="stat-change">dentro do limite</span></div><div class="stat-foot">12.4K / 50K créditos de IA</div></div>
+      </section>
+      <section class="overview-grid">
+        <div class="card chat-card">
+          ${cardTitle("Super Chat de IA","Converse com modelos e agentes no contexto do seu projeto.",`<button class="model-pill" data-action="choose-model"><span class="gem">✦</span> Gemini 2.5 Pro ${icon("chevron-down",12)}</button>`)}
+          <div class="chat-intro" id="chat-intro">
+            <div class="orb">${icon("sparkles",26)}</div>
+            <h3>Uma ideia pode virar qualquer coisa.</h3>
+            <p>Descreva o que você precisa. O Nexus coordena os melhores modelos e agentes para ajudar.</p>
+            <div class="suggestions">
+              <button class="suggestion" data-prompt="Crie um dashboard moderno para meu projeto">✦ Criar uma interface</button>
+              <button class="suggestion" data-prompt="Analise este projeto e sugira melhorias">⌕ Analisar meu projeto</button>
+              <button class="suggestion" data-prompt="Me ajude a corrigir um bug no meu código">⌘ Corrigir um bug</button>
+            </div>
+          </div>
+          <div class="conversation" id="conversation"></div>
+          ${composer()}
+        </div>
+        <div class="right-stack">
+          <div class="card model-summary">
+            <div class="summary-title"><h2>Modelo ativo</h2><button class="text-link" data-page-link="Modelos de IA">Ver catálogo ${icon("arrow-up-right",12)}</button></div>
+            <div class="active-model"><div class="model-icon">✦</div><div class="active-model-info"><b>Gemini 2.5 Pro</b><small>Google · Multimodal</small></div><span class="status">Grátis</span></div>
+            <div class="usage-row"><span>Uso mensal</span><span>12.4K / 50K tokens</span></div><div class="progress"><span></span></div>
+          </div>
+          <div class="card agent-card">
+            <div class="summary-title"><h2>Agentes em destaque</h2><button class="text-link" data-page-link="Agentes">Ver todos ${icon("arrow-up-right",12)}</button></div>
+            <div class="agent-list">${agents.slice(0,3).map(a=>`<div class="agent-row"><div class="agent-icon">${a[2]}</div><div class="agent-info"><b>${a[0]}</b><small>${a[1]}</small></div><span class="status">Ativo</span></div>`).join("")}</div>
+          </div>
+        </div>
+      </section>
+      <section class="lower-grid">
+        <div class="card compact-card">${cardTitle("Projetos recentes","Seus espaços de trabalho ativos",`<button class="text-link" data-page-link="Projetos">Ver todos</button>`)}
+          <div class="project-list">
+            ${projectRow("◈","Website Nexus","React · Supabase","há 2h")}
+            ${projectRow("✦","App de Tarefas","Next.js · Firebase","ontem")}
+            ${projectRow("⌘","Automação WhatsApp","n8n · OpenAI","há 3d")}
+          </div>
+        </div>
+        <div class="card compact-card">${cardTitle("Atividade recente","O que está acontecendo no seu workspace")}
+          <div class="activity-list">
+            <div class="activity-item"><span class="activity-dot"></span><div><b>Projeto criado com sucesso</b><small>Website Nexus · há 18 min</small></div></div>
+            <div class="activity-item"><span class="activity-dot"></span><div><b>Coding Agent concluiu uma tarefa</b><small>App de Tarefas · há 1 hora</small></div></div>
+            <div class="activity-item"><span class="activity-dot"></span><div><b>Gemini 2.5 Pro conectado</b><small>Modelos de IA · há 3 horas</small></div></div>
+          </div>
+        </div>
+        <div class="card compact-card">${cardTitle("Acesso rápido","Ferramentas para seu próximo passo")}
+          <div class="quick-actions"><button class="quick-action" data-page-link="Terminal">${icon("square-terminal")} Terminal</button><button class="quick-action" data-page-link="Navegador">${icon("globe-2")} Navegador</button><button class="quick-action" data-page-link="Marketplace">${icon("blocks")} Plugins</button><button class="quick-action" data-page-link="Integrações">${icon("plug-zap")} Integrações</button></div>
+        </div>
+      </section>`;
+    }
+    function projectRow(sym,name,tech,time) {
+      return `<div class="project-row"><div class="project-thumb">${sym}</div><div class="project-meta"><b>${name}</b><small>${tech}</small></div><span class="project-time">${time}</span></div>`;
+    }
+    function composer() {
+      return `<form class="composer-wrap" id="chat-form"><div class="composer"><textarea id="chat-input" rows="1" placeholder="Pergunte algo, crie ou escolha uma opção..." aria-label="Mensagem para o Nexus"></textarea><div class="composer-tools"><button type="button" class="tool-button" aria-label="Anexar arquivo" data-action="upload">${icon("paperclip")}</button><button type="button" class="tool-button" aria-label="Analisar imagem" data-action="image">${icon("image")}</button><button type="button" class="tool-button" aria-label="Modo agente" data-action="mode">${icon("bot")}</button><span class="composer-hint">Enter para enviar · Shift + Enter para nova linha</span><button class="send-button" aria-label="Enviar mensagem">${icon("arrow-up",17)}</button></div></div></form>`;
+    }
+    function modelsPage() {
+      return `${heading("Modelos de IA","Encontre e configure o modelo ideal para cada tarefa.",`<button class="btn btn-quiet" data-action="api-keys">${icon("key-round")} Cofre de API Keys</button><button class="btn btn-primary" data-action="compare">${icon("git-compare")} Comparar</button>`)}
+      <div class="toolbar"><div class="inline-search">${icon("search")}<input id="catalog-search" placeholder="Buscar modelo ou provedor..."></div>${["Todos","Grátis","Pagos","Locais","Favoritos"].map((f,i)=>`<button class="filter-chip ${i===0?"active":""}" data-model-filter="${f}">${f}</button>`).join("")}<button class="filter-chip" data-action="model-settings">${icon("sliders-horizontal")} Filtros</button></div>
+      <div class="grid data-grid" id="model-grid">${modelCards(models)}</div>
+      <div class="card" style="padding:17px;margin-top:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div style="flex:1"><b style="font-size:12px">Roteamento inteligente</b><div style="font-size:10px;color:var(--muted);margin-top:4px">Deixe o Nexus escolher o melhor modelo com base na sua tarefa.</div></div><button class="toggle on" data-toggle aria-label="Ativar roteamento"></button><button class="btn" data-action="routing">${icon("settings-2")} Configurar</button></div>`;
+    }
+    function modelCards(items) {
+      if(!items.length) return `<div class="empty-state">${icon("search",24)}<div>Nenhum modelo encontrado.</div></div>`;
+      return items.map(m=>`<article class="card data-card model-card" data-name="${(m.name+" "+m.provider+" "+m.type).toLowerCase()}" data-kind="${m.price}" data-type="${m.type}">
+        <div class="data-card-top"><div class="model-icon ${m.color}" style="width:39px;height:39px;font-size:18px">${m.icon}</div><div style="flex:1"><h3>${m.name}</h3><div class="mini-meta">${m.provider} · ${m.type}</div></div><button class="tool-button favorite-btn" data-action="favorite" title="Favoritar">${icon("star")}</button></div>
+        <p>${m.desc}</p><div style="display:flex;gap:6px"><span class="tag">${m.price}</span><span class="tag">${m.ctx}</span><span class="status">Disponível</span></div>
+        <div class="data-card-actions"><span class="mini-meta">● API disponível</span><button class="btn btn-primary" style="height:29px;padding:0 10px" data-action="select-model" data-model="${m.name}">Selecionar</button></div>
+      </article>`).join("");
+    }
+    function agentsPage() {
+      const list = agents.map((a,i)=>`<article class="card data-card agent-card-item" data-name="${(a[0]+" "+a[1]).toLowerCase()}"><div class="data-card-top"><div class="agent-icon" style="width:40px;height:40px;font-size:20px">${a[2]}</div><div style="flex:1"><h3>${a[0]}</h3><div class="mini-meta">${a[1]}</div></div><span class="status">Ativo</span></div><p>${a[3]}</p><div class="data-card-actions"><span class="mini-meta">Tarefas concluídas: ${[128,84,53,42,31][i%5]}</span><button class="btn" style="height:29px;padding:0 10px" data-action="agent-detail" data-agent="${a[0]}">Abrir agente ${icon("arrow-up-right",13)}</button></div></article>`).join("");
+      return `${heading("Agentes inteligentes","15 especialistas trabalhando juntos para transformar suas ideias.",`<button class="btn btn-primary" data-action="new-agent">${icon("plus")} Criar agente</button>`)}
+      <div class="toolbar"><div class="inline-search">${icon("search")}<input id="agent-search" placeholder="Buscar agente..."></div><button class="filter-chip active">Todos · 15</button><button class="filter-chip">Em execução · 3</button><button class="filter-chip">Favoritos</button><button class="btn btn-quiet" data-action="task-queue">${icon("list-todo")} Fila de tarefas</button></div><div class="grid data-grid" id="agent-grid">${list}</div>`;
+    }
+    function projectsPage() {
+      const data=[["◈","Website Nexus","React · Supabase","Em andamento","Atualizado há 2h"],["✦","App de Tarefas","Next.js · Firebase","Em andamento","Atualizado ontem"],["⌘","Automação WhatsApp","n8n · OpenAI","Concluído","Atualizado há 3 dias"],["▣","Estudo Python","Python · Jupyter","Em andamento","Atualizado há 5 dias"],["❋","Portfólio Pessoal","React · Tailwind","Rascunho","Atualizado há 1 semana"]];
+      return `${heading("Projetos","Tudo o que você está criando, em um só lugar.",`<button class="btn btn-primary" data-action="new-project">${icon("plus")} Novo projeto</button>`)}
+      <div class="toolbar"><button class="filter-chip active">Meus projetos</button><button class="filter-chip">Favoritos</button><button class="filter-chip">Recentes</button><div class="inline-search" style="margin-left:auto">${icon("search")}<input id="project-search" placeholder="Buscar projetos..."></div></div>
+      <div class="grid data-grid" id="project-grid">${data.map(p=>`<article class="card data-card project-card" data-name="${p[1].toLowerCase()}"><div class="data-card-top"><div class="project-thumb" style="width:42px;height:42px;font-size:19px">${p[0]}</div><div style="flex:1"><h3>${p[1]}</h3><div class="mini-meta">${p[2]}</div></div><button class="tool-button" data-action="project-menu">${icon("ellipsis")}</button></div><p style="margin-bottom:14px">${p[4]}</p><div class="data-card-actions"><span class="tag">${p[3]}</span><button class="btn" style="height:29px" data-action="open-project" data-project="${p[1]}">Abrir ${icon("arrow-right",13)}</button></div></article>`).join("")}</div>`;
+    }
+    function terminalPage() {
+      return `${heading("Terminal","Ambiente Linux isolado para desenvolver e executar seus projetos.",`<button class="btn btn-quiet" data-action="terminal-reset">${icon("rotate-ccw")} Limpar terminal</button><button class="btn btn-primary" data-action="sandbox">${icon("play")} Iniciar sandbox</button>`)}
+      <div class="split-layout"><div class="terminal-window"><div class="terminal-bar"><span class="term-dot"></span><span class="term-dot"></span><span class="term-dot"></span><span class="terminal-title">nexus@sandbox: ~/my-app</span><span class="status" style="margin-left:auto">Online</span></div><div class="terminal-output" id="terminal-output"><div>Bem-vindo ao <span class="purple">NEXUS SANDBOX</span> · Ubuntu 22.04</div><div>Ambiente isolado e pronto para executar.</div><br><div><span class="green">nexus@sandbox</span>:<span class="cyan">~/my-app</span>$ npm run dev</div><div>&gt; my-app@1.0.0 dev</div><div>&gt; vite</div><br><div class="green">VITE v5.2.1</div><div>➜ Local: &nbsp; <span class="cyan">http://localhost:3000/</span></div><div>➜ Network: use --host to expose</div><div>➜ press h to show help</div></div><form class="terminal-input-wrap" id="terminal-form"><span style="font:11px 'DM Mono';color:#2cdda3">❯</span><input id="terminal-command" autocomplete="off" placeholder="Digite um comando..."><button class="send-button" aria-label="Executar comando">${icon("arrow-up")}</button></form></div>
+      <div class="card" style="padding:17px">${cardTitle("Comandos rápidos","Execute com um toque")}<div class="quick-actions" style="grid-template-columns:repeat(2,1fr)">${["ls","cd","npm install","npm run dev","git status","python","node","bash"].map(c=>`<button class="quick-action command-chip" data-command="${c}">${icon("chevron-right")}${c}</button>`).join("")}</div><div style="margin-top:18px;padding:12px;background:#09152b;border-radius:9px;color:#8798b8;font-size:10px;line-height:1.6">Seu sandbox é isolado por projeto. Arquivos e dependências ficam disponíveis durante sua sessão.</div></div></div>`;
+    }
+    function browserPage() {
+      return `${heading("Navegador","Navegue e teste páginas com o Browser Agent.",`<button class="btn btn-quiet" data-action="browser-history">${icon("history")} Histórico</button><button class="btn btn-primary" data-action="browser-new">${icon("plus")} Nova aba</button>`)}
+      <div class="browser-bar">${icon("shield-check")}<input id="browser-url" value="https://localhost:3000" aria-label="Endereço da página"><button class="tool-button" data-action="browser-refresh">${icon("rotate-ccw")}</button><button class="btn" id="browser-go">Acessar ${icon("arrow-right",13)}</button></div>
+      <div class="browser-preview" id="browser-preview"><div><div class="orb" style="width:52px;height:52px;border-radius:50%">${icon("sparkles",25)}</div><h3>NEXUS</h3><p>Seu projeto está no ar!</p><span class="tag">Desenvolvido com React, Tailwind e Supabase</span><div style="margin-top:18px"><button class="btn" data-action="github">${icon("github")} Ver no GitHub</button> <button class="btn btn-primary" data-action="open-dashboard">Acessar Dashboard</button></div></div></div>
+      <div class="card" style="padding:16px;margin-top:14px">${cardTitle("Ferramentas do navegador","Ações rápidas do Browser Agent")}<div class="quick-actions" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr))">${[["plus-square","Nova aba"],["star","Favoritos"],["history","Histórico"],["scan-search","DevTools"],["camera","Captura"],["book-open","Modo leitor"]].map(x=>`<button class="quick-action" data-action="browser-tool">${icon(x[0])}${x[1]}</button>`).join("")}</div></div>`;
+    }
+    function marketplacePage() {
+      return `${heading("Marketplace de Plugins","Amplie o Nexus com ferramentas criadas para o seu fluxo de trabalho.",`<button class="btn btn-quiet" data-action="publish-plugin">${icon("upload")} Publicar extensão</button>`)}
+      <div class="toolbar"><div class="inline-search">${icon("search")}<input id="plugin-search" placeholder="Buscar plugins..."></div>${["Todos","Produtividade","IA","Desenvolvimento","Comunicação"].map((x,i)=>`<button class="filter-chip ${i===0?"active":""}" data-plugin-filter="${x}">${x}</button>`).join("")}</div>
+      <div class="grid data-grid" id="plugin-grid">${pluginCards(plugins)}</div>`;
+    }
+    function pluginCards(data) {
+      if(!data.length)return `<div class="empty-state">${icon("blocks",24)}<div>Nenhuma extensão encontrada.</div></div>`;
+      return data.map(p=>`<article class="card data-card plugin-card" data-name="${(p[0]+" "+p[1]+" "+p[3]).toLowerCase()}" data-category="${p[3]}"><div class="data-card-top"><div class="model-icon" style="background:linear-gradient(135deg,#143d6f,#43379b)">${p[2]}</div><div style="flex:1"><h3>${p[0]}</h3><div class="mini-meta">Nexus Extensions · ${p[4]}</div></div><button class="tool-button" data-action="favorite">${icon("star")}</button></div><p>${p[1]}</p><span class="tag">${p[3]}</span><div class="data-card-actions"><span class="mini-meta">★ 4.9 · Gratuito</span><button class="btn btn-primary install-btn" data-action="install">${icon("download")} Instalar</button></div></article>`).join("");
+    }
+    function integrationsPage() {
+      return `${heading("Integrações","Conecte suas ferramentas favoritas ao workspace Nexus.",`<button class="btn btn-primary" data-action="add-integration">${icon("plus")} Adicionar integração</button>`)}
+      <div class="toolbar"><div class="inline-search">${icon("search")}<input id="integration-search" placeholder="Buscar integração..."></div>${["Todos","Desenvolvimento","IA","Comunicação"].map((x,i)=>`<button class="filter-chip ${i===0?"active":""}" data-integration-filter="${x}">${x}</button>`).join("")}</div>
+      <div class="grid data-grid">${integrations.map(x=>`<article class="card data-card integration-card" data-name="${(x[0]+" "+x[1]).toLowerCase()}"><div class="data-card-top"><div class="model-icon" style="background:linear-gradient(135deg,#123f75,#294ba5)">${x[2]}</div><div style="flex:1"><h3>${x[0]}</h3><div class="mini-meta">${x[1]}</div></div></div><p>Use ${x[0]} diretamente com seus agentes e projetos Nexus.</p><div class="data-card-actions"><span class="${x[3]==="Conectado"?"status":"tag"}">${x[3]}</span><button class="btn ${x[3]==="Conectado"?"":"btn-primary"}" data-action="connect">${x[3]==="Conectado"?"Gerenciar":"Conectar"} ${icon("arrow-up-right",13)}</button></div></article>`).join("")}</div>`;
+    }
+    function voicePage() {
+      return `${heading("Voz & Áudio","Converse com seus agentes e transforme voz em produtividade.",`<button class="btn btn-quiet" data-action="voice-settings">${icon("settings-2")} Configurações</button>`)}
+      <div class="split-layout"><div class="card voice-panel"><div class="voice-orb" id="voice-orb">${icon("mic",48)}</div><h2 style="font:500 18px 'Space Grotesk';margin-bottom:7px" id="voice-label">Toque para falar</h2><p class="subheading" id="voice-sub">Reconhecimento de voz em tempo real, pronto para você.</p><div style="height:33px;display:flex;align-items:center;justify-content:center;gap:3px;margin:18px 0">${Array.from({length:42},(_,i)=>`<span style="width:2px;height:${5+Math.sin(i*2.3)*10+Math.random()*12}px;background:${i%3===0?"#21bfff":"#6353ff"};border-radius:4px;opacity:.8"></span>`).join("")}</div><button class="btn btn-primary" id="voice-toggle">${icon("mic")} Iniciar conversa</button><button class="btn" style="margin-left:7px" data-action="voice-end">${icon("square")} Encerrar</button><p style="font-size:9px;color:#7181a0;margin-top:16px">Sua voz é processada com segurança. Você controla quando o microfone está ativo.</p></div><div class="card" style="padding:17px">${cardTitle("Recursos multimodais","Mais formas de interagir com o Nexus")}<div class="activity-list"><div class="activity-item"><span class="activity-dot"></span><div><b>Transcrição em tempo real</b><small>Transforme fala em texto durante a conversa.</small></div></div><div class="activity-item"><span class="activity-dot"></span><div><b>Análise de arquivos</b><small>Envie imagens, PDFs e documentos para análise.</small></div></div><div class="activity-item"><span class="activity-dot"></span><div><b>OCR inteligente</b><small>Extraia texto e informações de imagens.</small></div></div><div class="activity-item"><span class="activity-dot"></span><div><b>Model Context Protocol</b><small>Conecte ferramentas e fontes de contexto externas.</small></div></div></div></div></div>`;
+    }
+    function settingsPage() {
+      const settings=[["Cofre de API Keys","Armazene chaves de provedores com criptografia."],["Roteamento inteligente","Escolha automaticamente o modelo ideal para cada tarefa."],["Memória do projeto","Permita que agentes lembrem o contexto entre sessões."],["Confirmação de comandos","Peça confirmação antes de executar comandos no sandbox."],["Notificações de tarefas","Receba alertas quando agentes finalizarem atividades."],["Modo de privacidade","Não use conversas para aprimorar modelos."]];
+      return `${heading("Configurações","Gerencie seu perfil, preferências e segurança.",`<button class="btn btn-primary" data-action="save-settings">${icon("save")} Salvar alterações</button>`)}
+      <div class="split-layout"><div class="card" style="padding:18px"><div style="display:flex;align-items:center;gap:13px;padding-bottom:17px;border-bottom:1px solid var(--line)"><div class="avatar" style="width:48px;height:48px;font-size:17px">BL</div><div><b style="font-size:14px">Beli</b><div class="mini-meta" style="margin-top:4px">beli@nexus.ai · Plano Free</div></div><button class="btn" style="margin-left:auto" data-action="edit-profile">Editar perfil</button></div>${settings.map((s,i)=>`<div class="setting-row"><div><b>${s[0]}</b><small>${s[1]}</small></div><button class="toggle ${i<4?"on":""}" data-toggle aria-label="${s[0]}"></button></div>`).join("")}</div><div class="card" style="padding:18px;height:max-content">${cardTitle("Segurança e conexões")}<div class="activity-list"><div class="activity-item"><span class="activity-dot"></span><div><b>Criptografia ativa</b><small>Seus dados e credenciais estão protegidos.</small></div></div><div class="activity-item"><span class="activity-dot"></span><div><b>Autenticação OAuth</b><small>GitHub conectado à sua conta.</small></div></div></div><button class="btn" style="width:100%;margin-top:17px" data-action="security">${icon("shield")} Gerenciar segurança</button><button class="btn btn-quiet" style="width:100%;margin-top:8px" data-action="api-keys">${icon("key-round")} Cofre de API Keys</button></div></div>`;
+    }
+    function chatPage() {
+      return `${heading("Super Chat","Uma conversa, infinitas possibilidades. Seu contexto acompanha você.",`<button class="btn btn-quiet" data-action="chat-history">${icon("history")} Histórico</button><button class="btn btn-primary" data-action="new-chat">${icon("plus")} Nova conversa</button>`)}
+      <div class="card chat-card">${cardTitle("Nova conversa","Gemini 2.5 Pro · Contexto do projeto ativo",`<button class="model-pill" data-action="choose-model"><span class="gem">✦</span> Gemini 2.5 Pro ${icon("chevron-down",12)}</button>`)}
+      <div class="chat-intro" id="chat-intro"><div class="orb">${icon("sparkles",26)}</div><h3>Em que posso ajudar você?</h3><p>Programe, pesquise, planeje ou execute tarefas com seus agentes especializados.</p><div class="suggestions">${["Programação","Pesquisa","Planejamento","Modo agente"].map((x,i)=>`<button class="suggestion" data-prompt="${["Ajude-me a programar uma nova funcionalidade","Pesquise as melhores práticas para meu projeto","Monte um plano de ação para este projeto","Analise meu pedido e delegue aos agentes certos"][i]}">${x}</button>`).join("")}</div></div><div class="conversation" id="conversation"></div>${composer()}</div>`;
+    }
+    function render(page=currentPage) {
+      currentPage=page;
+      document.getElementById("crumb-current").textContent=page;
+      document.querySelectorAll(".nav-item").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
+      const pages={"Início":homePage,"Super Chat":chatPage,"Agentes":agentsPage,"Modelos de IA":modelsPage,"Projetos":projectsPage,"Terminal":terminalPage,"Navegador":browserPage,"Marketplace":marketplacePage,"Integrações":integrationsPage,"Voz & Áudio":voicePage,"Configurações":settingsPage};
+      view.innerHTML=(pages[page]||homePage)();
+      if(window.lucide) lucide.createIcons();
+      document.body.classList.remove("nav-open");
+      window.scrollTo({top:0,behavior:"smooth"});
+    }
+    function toast(msg) {
+      const el=document.createElement("div");el.className="toast";el.textContent=msg;
+      document.getElementById("toasts").appendChild(el);
+      setTimeout(()=>el.remove(),3200);
+    }
+    function showModal(title,body,submit="Confirmar") {
+      document.getElementById("modal-root").innerHTML=`<div class="modal-backdrop" data-close-modal><div class="modal" role="dialog" aria-modal="true"><div class="modal-head"><h2>${title}</h2><button class="tool-button" data-close-modal aria-label="Fechar">${icon("x")}</button></div><div class="modal-body">${body}</div><div class="modal-foot"><button class="btn btn-quiet" data-close-modal>Cancelar</button><button class="btn btn-primary" data-modal-submit>${submit}</button></div></div></div>`;
+      if(window.lucide)lucide.createIcons();
+      const first=document.querySelector(".modal input");if(first)first.focus();
+    }
+    function projectModal() {
+      showModal("Criar novo projeto",`<div class="field"><label>Nome do projeto</label><input id="new-project-name" placeholder="Ex.: Meu próximo grande projeto" required></div><div class="field"><label>Descrição</label><textarea placeholder="O que você quer construir?"></textarea></div><div class="field"><label>Modelo padrão</label><select><option>Gemini 2.5 Pro</option><option>DeepSeek R1</option><option>Claude 3.7 Sonnet</option></select></div>`,"Criar projeto");
+    }
+    function sendMessage(text) {
+      if(!text.trim())return;
+      document.getElementById("chat-intro")?.classList.add("hidden");
+      const conv=document.getElementById("conversation");
+      conv.insertAdjacentHTML("beforeend",`<div class="message user"><div class="message-meta">Você · agora</div>${escapeHtml(text)}</div>`);
+      const waiting=`response-${++chatCount}`;
+      conv.insertAdjacentHTML("beforeend",`<div class="message ai" id="${waiting}"><div class="message-meta"><span class="orb" style="width:16px;height:16px;border-radius:5px;margin:0;font-size:9px">✦</span> Nexus AI · Gemini 2.5 Pro</div><span style="color:#91a4c8">Analisando sua solicitação...</span></div>`);
+      conv.scrollTop=conv.scrollHeight;
+      const input=document.getElementById("chat-input");if(input)input.value="";
+      setTimeout(()=>{const el=document.getElementById(waiting);if(el){el.innerHTML=`<div class="message-meta">✦ Nexus AI · agora</div>Claro! Vou ajudar você com isso. Posso estruturar a solução, dividir o trabalho entre os agentes especializados e acompanhar cada etapa. Quer começar definindo os requisitos ou prefere que eu prepare uma primeira versão?`;conv.scrollTop=conv.scrollHeight;}},950);
+    }
+    function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+    document.getElementById("main-nav").addEventListener("click",e=>{
+      const b=e.target.closest("[data-page]");if(b)render(b.dataset.page);
+    });
+    document.getElementById("menuToggle").addEventListener("click",()=>document.body.classList.toggle("nav-open"));
+    document.getElementById("overlay").addEventListener("click",()=>document.body.classList.remove("nav-open"));
+    view.addEventListener("click",e=>{
+      const link=e.target.closest("[data-page-link]");if(link){render(link.dataset.pageLink);return;}
+      const prompt=e.target.closest("[data-prompt]");if(prompt){const input=document.getElementById("chat-input");if(input){input.value=prompt.dataset.prompt;input.focus();}else{render("Super Chat");setTimeout(()=>{const i=document.getElementById("chat-input");if(i){i.value=prompt.dataset.prompt;i.focus();}},20);}return;}
+      const filter=e.target.closest("[data-model-filter]");
+      if(filter){currentFilter=filter.dataset.modelFilter;document.querySelectorAll("[data-model-filter]").forEach(x=>x.classList.toggle("active",x===filter));filterModels();return;}
+      const pf=e.target.closest("[data-plugin-filter]");
+      if(pf){document.querySelectorAll("[data-plugin-filter]").forEach(x=>x.classList.toggle("active",x===pf));const q=document.getElementById("plugin-search")?.value.toLowerCase()||"";let data=plugins.filter(p=>(pf.dataset.pluginFilter==="Todos"||p[3]===pf.dataset.pluginFilter)&&p.join(" ").toLowerCase().includes(q));document.getElementById("plugin-grid").innerHTML=pluginCards(data);lucide.createIcons();return;}
+      const action=e.target.closest("[data-action]")?.dataset.action;
+      if(!action)return;
+      if(action==="new-project")projectModal();
+      else if(action==="choose-model"){render("Modelos de IA");toast("Selecione um modelo para esta conversa.");}
+      else if(action==="select-model"){toast(`${e.target.closest("[data-model]").dataset.model} definido como modelo ativo.`);document.querySelector(".active-model-info b")?.replaceChildren(document.createTextNode(e.target.closest("[data-model]").dataset.model));}
+      else if(action==="favorite"){const b=e.target.closest("button");b.classList.toggle("favorited");b.style.color=b.classList.contains("favorited")?"#ffd166":"";toast(b.classList.contains("favorited")?"Adicionado aos favoritos":"Removido dos favoritos");}
+      else if(action==="install"){const b=e.target.closest("button");b.innerHTML=`${icon("check")} Instalado`;b.classList.remove("btn-primary");b.disabled=true;lucide.createIcons();toast("Extensão instalada com sucesso.");}
+      else if(action==="connect"){const b=e.target.closest("button");b.innerHTML=`${icon("check")} Conectado`;b.classList.remove("btn-primary");b.closest(".data-card").querySelector(".data-card-actions span").className="status";b.closest(".data-card").querySelector(".data-card-actions span").textContent="Conectado";lucide.createIcons();toast("Integração conectada com sucesso.");}
+      else if(action==="toggle"){e.target.closest(".toggle")?.classList.toggle("on");}
+      else if(action==="terminal-reset"){document.getElementById("terminal-output").innerHTML="Terminal limpo.<br><span class='green'>nexus@sandbox</span>:<span class='cyan'>~/my-app</span>$ ";terminalHistory=[];}
+      else if(action==="sandbox")toast("Sandbox iniciado. Ambiente Linux pronto.");
+      else if(action==="upload"||action==="image"){const input=document.createElement("input");input.type="file";input.accept=action==="image"?"image/*":".pdf,.doc,.docx,.txt,.png,.jpg";input.onchange=()=>{if(input.files[0])toast(`${input.files[0].name} anexado à conversa.`)};input.click();}
+      else if(action==="mode")toast("Modo agente ativado: agentes especializados podem colaborar na resposta.");
+      else if(action==="new-chat"){document.getElementById("conversation").innerHTML="";document.getElementById("chat-intro")?.classList.remove("hidden");toast("Nova conversa iniciada.");}
+      else if(action==="voice-settings")toast("Configurações de voz: Português · Reconhecimento automático.");
+      else if(action==="voice-end"){document.getElementById("voice-orb")?.classList.remove("listening");document.getElementById("voice-label").textContent="Toque para falar";document.getElementById("voice-sub").textContent="Reconhecimento de voz em tempo real, pronto para você.";toast("Sessão de voz encerrada.");}
+      else if(action==="workspace")toast("Workspace pessoal selecionado.");
+      else if(action==="notifications")toast("Você está em dia. Nenhuma notificação nova.");
+      else if(action==="help")showModal("Central de ajuda",`<p style="color:var(--muted);font-size:12px;line-height:1.7">Explore agentes, modelos e integrações no menu lateral. Para começar, envie uma mensagem no Super Chat ou crie um projeto novo.</p><div class="quick-actions"><button class="quick-action" data-page-link="Agentes">${icon("bot")} Conhecer agentes</button><button class="quick-action" data-page-link="Modelos de IA">${icon("sparkles")} Explorar modelos</button></div>`,"Entendi");
+      else if(action==="api-keys")showModal("Cofre de API Keys",`<p style="font-size:11px;color:var(--muted);line-height:1.6">Suas chaves são criptografadas e armazenadas com segurança. Adicione uma chave para habilitar seu provedor.</p><div class="field"><label>Provedor</label><select><option>Google Gemini</option><option>OpenAI</option><option>Anthropic</option><option>OpenRouter</option><option>Hugging Face</option></select></div><div class="field"><label>API Key</label><input type="password" placeholder="sk-••••••••••••••••"></div>`,"Salvar chave");
+      else if(action==="compare")showModal("Comparar modelos",`<div class="field"><label>Modelo 1</label><select><option>Gemini 2.5 Pro</option><option>DeepSeek R1</option></select></div><div class="field"><label>Modelo 2</label><select><option>Claude 3.7 Sonnet</option><option>GPT-4.1</option></select></div><p style="color:var(--muted);font-size:10px">Compare qualidade, velocidade, contexto e custo lado a lado.</p>`,"Iniciar comparação");
+      else if(action==="new-agent")showModal("Criar agente personalizado",`<div class="field"><label>Nome do agente</label><input placeholder="Ex.: Product Designer"></div><div class="field"><label>Instruções e especialidade</label><textarea placeholder="Descreva o papel e como o agente deve trabalhar..."></textarea></div><div class="field"><label>Modelo padrão</label><select><option>Automático</option><option>Gemini 2.5 Pro</option><option>Claude 3.7 Sonnet</option></select></div>`,"Criar agente");
+      else if(action==="agent-detail")showModal(e.target.closest("[data-agent]").dataset.agent,`<p style="color:var(--muted);font-size:12px;line-height:1.7">Este agente está ativo e pronto para colaborar com seus projetos. Ele pode receber tarefas diretamente ou ser acionado pelo Main Agent.</p><div class="setting-row"><div><b>Compartilhamento de contexto</b><small>Usar informações do projeto atual</small></div><button class="toggle on" data-toggle></button></div>`,"Iniciar tarefa");
+      else if(action==="routing"||action==="model-settings")showModal("Configurações de modelos",`<div class="field"><label>Estratégia de roteamento</label><select><option>Melhor qualidade</option><option>Mais rápido</option><option>Menor custo</option></select></div><div class="field"><label>Temperatura</label><input type="range" min="0" max="2" step=".1" value=".7"></div><div class="setting-row"><div><b>Fallback automático</b><small>Trocar para outro modelo se houver falha.</small></div><button class="toggle on" data-toggle></button></div>`,"Salvar preferências");
+      else if(action==="publish-plugin"||action==="add-integration")showModal(action==="publish-plugin"?"Publicar extensão":"Adicionar integração",`<div class="field"><label>Nome</label><input placeholder="Nome da ferramenta"></div><div class="field"><label>URL ou identificador</label><input placeholder="https://..."></div><div class="field"><label>Descrição</label><textarea placeholder="O que esta integração permite fazer?"></textarea></div>`,"Continuar");
+      else if(action==="save-settings")toast("Preferências salvas com segurança.");
+      else if(action==="upgrade")showModal("NEXUS PRO",`<p style="color:var(--muted);line-height:1.7;font-size:12px">Desbloqueie limites maiores, modelos premium, mais sandboxes e colaboração avançada entre agentes.</p><div class="active-model"><div class="model-icon">✦</div><div class="active-model-info"><b>Plano Pro</b><small>Mais possibilidades para suas ideias</small></div><span class="tag">Em breve</span></div>`,"Avisar quando disponível");
+      else if(action==="profile"||action==="edit-profile")showModal("Seu perfil",`<div class="field"><label>Nome</label><input value="Beli"></div><div class="field"><label>E-mail</label><input value="beli@nexus.ai"></div>`,"Salvar perfil");
+      else if(action==="task-queue")showModal("Fila de tarefas",`<div class="activity-list"><div class="activity-item"><span class="activity-dot"></span><div><b>Gerar estrutura inicial do projeto</b><small>Coding Agent · Em execução</small></div></div><div class="activity-item"><span class="activity-dot"></span><div><b>Verificar dependências</b><small>Security Agent · Na fila</small></div></div></div>`,"Fechar");
+      else if(action==="activity"||action==="chat-history")showModal("Histórico recente",`<div class="activity-list"><div class="activity-item"><span class="activity-dot"></span><div><b>Como criar uma interface React moderna?</b><small>Hoje, 10:42 · Gemini 2.5 Pro</small></div></div><div class="activity-item"><span class="activity-dot"></span><div><b>Revisão de segurança do projeto</b><small>Ontem, 16:21 · Security Agent</small></div></div><div class="activity-item"><span class="activity-dot"></span><div><b>Planejamento do Website Nexus</b><small>Ontem, 11:05 · Main Agent</small></div></div></div>`,"Ver conversas");
+      else if(action==="browser-refresh")toast("Página atualizada.");
+      else if(action==="browser-new")toast("Nova aba criada.");
+      else if(action==="browser-history")toast("Histórico de navegação aberto.");
+      else if(action==="browser-tool")toast("Ferramenta do navegador ativada.");
+      else if(action==="github")toast("Conecte o GitHub em Integrações para abrir este repositório.");
+      else if(action==="open-dashboard")toast("Dashboard do projeto aberto.");
+      else if(action==="security")toast("Suas configurações de segurança estão atualizadas.");
+      else if(action==="select-model")toast("Modelo selecionado.");
+    });
+    view.addEventListener("submit",e=>{
+      if(e.target.id==="chat-form"){e.preventDefault();sendMessage(document.getElementById("chat-input").value);}
+      if(e.target.id==="terminal-form"){e.preventDefault();const input=document.getElementById("terminal-command"),cmd=input.value.trim();if(!cmd)return;const out=document.getElementById("terminal-output");out.insertAdjacentHTML("beforeend",`<div><span class="green">nexus@sandbox</span>:<span class="cyan">~/my-app</span>$ ${escapeHtml(cmd)}</div><div>${terminalResponse(cmd)}</div>`);input.value="";out.scrollTop=out.scrollHeight;}
+    });
+    function terminalResponse(cmd){const c=cmd.toLowerCase();if(c==="ls")return `<span class="cyan">src/</span> &nbsp; package.json &nbsp; README.md &nbsp; vite.config.js`;if(c==="pwd")return "/workspace/my-app";if(c.startsWith("npm run dev"))return `<span class="green">VITE v5.2.1</span> ready in 320ms<br>➜ Local: <span class="cyan">http://localhost:3000/</span>`;if(c==="git status")return "On branch main<br>nothing to commit, working tree clean";if(c.startsWith("cd"))return "Diretório atualizado.";if(c==="clear")return "";return `Comando executado no sandbox: <span class="green">${escapeHtml(cmd)}</span>`;}
+    view.addEventListener("input",e=>{
+      if(e.target.id==="catalog-search")filterModels();
+      if(e.target.id==="agent-search"){let q=e.target.value.toLowerCase();document.querySelectorAll(".agent-card-item").forEach(x=>x.style.display=x.dataset.name.includes(q)?"":"none");}
+      if(e.target.id==="project-search"){let q=e.target.value.toLowerCase();document.querySelectorAll(".project-card").forEach(x=>x.style.display=x.dataset.name.includes(q)?"":"none");}
+      if(e.target.id==="plugin-search"){let q=e.target.value.toLowerCase();let filter=document.querySelector("[data-plugin-filter].active")?.dataset.pluginFilter||"Todos";let data=plugins.filter(p=>(filter==="Todos"||p[3]===filter)&&p.join(" ").toLowerCase().includes(q));document.getElementById("plugin-grid").innerHTML=pluginCards(data);lucide.createIcons();}
+      if(e.target.id==="integration-search"){let q=e.target.value.toLowerCase();document.querySelectorAll(".integration-card").forEach(x=>x.style.display=x.dataset.name.includes(q)?"":"none");}
+    });
+    function filterModels(){
+      const q=document.getElementById("catalog-search")?.value.toLowerCase()||"";
+      let items=models.filter(m=>(m.name+" "+m.provider+" "+m.type).toLowerCase().includes(q));
+      if(currentFilter==="Grátis")items=items.filter(x=>x.price==="Grátis");
+      if(currentFilter==="Pagos")items=items.filter(x=>x.price==="Pago");
+      if(currentFilter==="Locais")items=items.filter(x=>x.type==="Local"||x.type==="Open source");
+      if(currentFilter==="Favoritos")items=items.filter(x=>document.querySelector(`.model-card[data-name*="${x.name.toLowerCase()}"] .favorite-btn`)?.classList.contains("favorited"));
+      document.getElementById("model-grid").innerHTML=modelCards(items);lucide.createIcons();
+    }
+    document.getElementById("global-search").addEventListener("keydown",e=>{
+      if(e.key==="Enter"){const q=e.target.value.trim();if(q){render("Modelos de IA");setTimeout(()=>{const i=document.getElementById("catalog-search");if(i){i.value=q;filterModels();}},0);}}
+    });
+    document.addEventListener("keydown",e=>{
+      if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();document.getElementById("global-search").focus();}
+      if(e.key==="Escape"){document.getElementById("modal-root").innerHTML="";document.body.classList.remove("nav-open");}
+    });
+    document.getElementById("modal-root").addEventListener("click",e=>{
+      if(e.target.closest("[data-close-modal]"))document.getElementById("modal-root").innerHTML="";
+      if(e.target.closest("[data-modal-submit]")){const name=document.getElementById("new-project-name");if(name&&!name.value.trim()){name.focus();name.style.borderColor="#ff5f7c";return;}const title=document.querySelector(".modal-head h2")?.textContent||"Concluído";document.getElementById("modal-root").innerHTML="";toast(title.includes("projeto")?"Projeto criado com sucesso.":title.includes("chave")?"Credencial salva com segurança.":"Alterações salvas com sucesso.");}
+    });
+    view.addEventListener("click",e=>{
+      if(e.target.closest("#browser-go")){const url=document.getElementById("browser-url").value;document.querySelector("#browser-preview p").textContent=`Página carregada: ${url}`;toast("Navegação concluída.");}
+      if(e.target.closest("#voice-toggle")){const orb=document.getElementById("voice-orb");orb.classList.toggle("listening");const active=orb.classList.contains("listening");document.getElementById("voice-label").textContent=active?"Estou ouvindo...":"Toque para falar";document.getElementById("voice-sub").textContent=active?"Fale naturalmente com seu agente.":"Reconhecimento de voz em tempo real, pronto para você.";e.target.closest("#voice-toggle").innerHTML=active?`${icon("mic-off")} Pausar microfone`:`${icon("mic")} Iniciar conversa`;lucide.createIcons();}
+      const chip=e.target.closest(".command-chip");if(chip){const input=document.getElementById("terminal-command");if(input){input.value=chip.dataset.command;input.focus();}}
+    });
+    render("Início");
+  </script>
+</body>
+</html>
